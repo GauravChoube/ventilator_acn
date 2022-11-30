@@ -2,7 +2,6 @@
 
 AccelStepper stepper;
 
-int speedValue;
 
 const int stepPin = 3; 
 const int dirPin = 4;
@@ -17,40 +16,67 @@ float s = ((r * 180)/75 ); //degrees for the rotation of stepper motor
 float t = ((s * 200)/360); //steps for stepper motor
 //float t;
 float u = ((60/q) * 10000) - 10000;// time
-
-void stepperMotorSetSpeed()
+int stepperMotorInit()
 {
-  stepper.setSpeed(1000);
+
+}
+
+int stepperMotorSetStep(unsigned int stepValue)
+{
+    
+}
+unsigned int stepperMotorGetStep()
+{
+
+}
+
+int stepperMotorSetSpeed(unsigned int speedValue)
+{
+  stepper.setSpeed(speedValue);
   Serial.println("Set Speed");
 }
 
-void stepperMotorGetSpeed()
+unsigned int stepperMotorGetSpeed( )
 {  
   stepper.runSpeed();
   Serial.println("Get speed");
 }
 
-unsigned int stepperMotorGetStep()
-{
-
-  
-}
 void stepperMotorStart()
 {
-  stepper.enableOutputs ()
+  stepper.enableOutputs ();
 }
 void stepperMotorStop()
 {
-  stepper.disableOutputs ()
+  stepper.disableOutputs ();
+}
+int stepperMotorReset()
+{
+
+}
+int stepperMotorGetTorque()
+{
+
+}
+int stepperMotorSetTorque()
+{
+
 }
 
+int stepperMotorGetCurrentConsumption()
+{
 
-int stepperMotorStop()
+}
+
+int stepperMotorGetCurrentVoltage()
+{
+
+}
 
 void setup() {
-  stepperMotorSetSpeed();
-  stepperMotorGetSpeed();
-  stepperMotorGetStep();
+ // stepperMotorSetSpeed();
+  //stepperMotorGetSpeed();
+  //stepperMotorGetStep();
 
   // put your setup code here, to run once:
 }

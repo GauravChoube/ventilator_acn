@@ -1,5 +1,12 @@
-stepperMotorSetSpeed();
-stepperMotorGetSpeed();
-stepperMotorGetStep();
+stepperMotorInit();
+stepperMotorSetStep( unsigned int stepValue);
+stepperMotorGetStep( );
+stepperMotorSetSpeed(unsigned int speedValue);
+stepperMotorGetSpeed( );
 stepperMotorStart();
 stepperMotorStop();
+stepperMotorReset();
+stepperMotorGetTorque();
+stepperMotorSetTorque();
+stepperMotorGetCurrentConsumption();
+stepperMotorGetCurrentVoltage();
