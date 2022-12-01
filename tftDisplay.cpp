@@ -111,3 +111,28 @@ void DisplayMainScreen()
   
 
 }
+
+
+
+void DisplayCalibrationMsg()
+{
+   DisplayClear();
+  int colour = ST77XX_GREEN;
+    // tft.drawRect(starting X position,starting Y position , width, length, colour);
+  // tft.drawRect(X+tft.width()/4+2.5,Y+35, 37, 40, colour);
+  tft.drawRect(X+tft.width()/4-20,Y+15, tft.width()/2+20, 45, colour);
+//  tft.fillRect(X+tft.width()/4-5,Y+35, tft.width()/2, 40, ST77XX_WHITE);
+  DisplayWriteText(X+tft.width()/4-10,Y+33.5, 1.5, "Calibrating...", ST77XX_MAGENTA);
+//  tft.reset();
+
+
+}
+
+void DisplayErrorMsg(){
+  DisplayClear();
+  int colour = ST77XX_GREEN;
+  tft.drawRect(X+tft.width()/4-20,Y+15, tft.width()/2+20, 45, colour);
+  DisplayWriteText(X+tft.width()/4-15,Y+30, 1.2, "Pressure sensor", ST77XX_MAGENTA);
+  DisplayWriteText(X+tft.width()/4,Y+40, 1.2, "not found", ST77XX_MAGENTA);
+  
+}
