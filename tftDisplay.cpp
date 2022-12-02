@@ -1,5 +1,4 @@
 #include "Adafruit_ST77xx.h"
-
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
 #include <SPI.h>
@@ -110,4 +109,29 @@ void DisplayMainScreen()
   tft.drawRect(X+tft.width()/2,Y+60,X+60,20, colour);
   
 
+}
+
+
+
+void DisplayCalibrationMsg()
+{
+   DisplayClear();
+  int colour = ST77XX_GREEN;
+    // tft.drawRect(starting X position,starting Y position , width, length, colour);
+  // tft.drawRect(X+tft.width()/4+2.5,Y+35, 37, 40, colour);
+  tft.drawRect(X+tft.width()/4-20,Y+15, tft.width()/2+20, 45, colour);
+//  tft.fillRect(X+tft.width()/4-5,Y+35, tft.width()/2, 40, ST77XX_WHITE);
+  DisplayWriteText(X+tft.width()/4-10,Y+33.5, 1.5, "Calibrating...", ST77XX_MAGENTA);
+//  tft.reset();
+
+
+}
+
+void DisplayErrorMsg(char* error_msg){
+  DisplayClear();
+  int colour = ST77XX_GREEN;
+  tft.drawRect(0,Y+15, tft.width(), 45, colour);
+  DisplayWriteText(X+tft.width()/4-5,Y+30, 1.2, "SYSTEM ERROR", ST77XX_MAGENTA);
+  DisplayWriteText(X+tft.width()/4-40,Y+40, 0.1, error_msg, ST77XX_MAGENTA);
+  
 }
