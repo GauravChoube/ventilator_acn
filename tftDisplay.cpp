@@ -1,5 +1,4 @@
 #include "Adafruit_ST77xx.h"
-
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
 #include <SPI.h>
@@ -128,11 +127,11 @@ void DisplayCalibrationMsg()
 
 }
 
-void DisplayErrorMsg(){
+void DisplayErrorMsg(char* error_msg){
   DisplayClear();
   int colour = ST77XX_GREEN;
-  tft.drawRect(X+tft.width()/4-20,Y+15, tft.width()/2+20, 45, colour);
-  DisplayWriteText(X+tft.width()/4-15,Y+30, 1.2, "Pressure sensor", ST77XX_MAGENTA);
-  DisplayWriteText(X+tft.width()/4,Y+40, 1.2, "not found", ST77XX_MAGENTA);
+  tft.drawRect(0,Y+15, tft.width(), 45, colour);
+  DisplayWriteText(X+tft.width()/4-5,Y+30, 1.2, "SYSTEM ERROR", ST77XX_MAGENTA);
+  DisplayWriteText(X+tft.width()/4-40,Y+40, 0.1, error_msg, ST77XX_MAGENTA);
   
 }
