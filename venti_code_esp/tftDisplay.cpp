@@ -172,7 +172,11 @@ int getWidthFromMAcro()
   return 0;
 }
 
-
+void DisplayStatus(char *power)
+{
+    tft.fillRect(48, 5, X + 58, 10, ST77XX_BLACK);
+    DisplayWriteText(48, 5, 1, power, ST77XX_WHITE);
+}
 
 void DisplayCalibrationMsg() {
   DisplayClear();

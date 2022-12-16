@@ -10,7 +10,13 @@
 int rval = 0xff;
 int currentBOXcounter = 0;
 int boxCursorMove = 0;
+static int blinkStatus = 0;
+static bool displayStatusDone = 0;
+
+
 int powerSwitchValue = 0;
+int currentPowerSwitchValue = 0;
+
 int curentLeftButtonValue = 0;
 int currentRightButtonValue = 0;
 int currentPotValue = 0;
@@ -25,22 +31,19 @@ int tidalVolumeOutput = 0;
 
 bool callibrationDone = false;
 
-int fetchInput()
-{
+int fetchInput() {
   // Serial.println("reading LeftButtonValue:");
   int buttonValue = 0;
 
   buttonValue = getLeftButtonValue();
-  if (buttonValue != curentLeftButtonValue)
-  {
+  if (buttonValue != curentLeftButtonValue) {
 
     curentLeftButtonValue = buttonValue;
 
     Serial.print(("LeftButtonValue:"));
     Serial.println(curentLeftButtonValue);
 
-    if (curentLeftButtonValue == 1)
-    {
+    if (curentLeftButtonValue == 1) {
       boxCursorMove = 1;
 
       if (currentBOXcounter == 0)
@@ -58,16 +61,14 @@ int fetchInput()
 
   buttonValue = getRightButtonValue();
   // Serial.println("reading rightButtonValue:");
-  if (buttonValue != currentRightButtonValue)
-  {
+  if (buttonValue != currentRightButtonValue) {
 
     currentRightButtonValue = buttonValue;
 
     Serial.print(("RightButtonValue:"));
     Serial.println(currentRightButtonValue);
 
-    if (currentRightButtonValue == 1)
-    {
+    if (currentRightButtonValue == 1) {
       boxCursorMove = 1;
       if (currentBOXcounter == 3)
         currentBOXcounter = 0;
@@ -82,7 +83,15 @@ int fetchInput()
     }
   }
   // Serial.println("reading stopstartButtonValue:");
-  powerSwitchValue ^= getStartStopButtonValue();
+
+  int buttonVal = getStartStopButtonValue();
+  if (buttonVal != powerSwitchValue) {
+    powerSwitchValue = buttonVal;
+    if (powerSwitchValue == 0) {
+      currentPowerSwitchValue ^= 0x01;
+      displayStatusDone = 0;
+    }
+  }
 
   // Serial.println("reading pot Value:");
   currentPotValue = getPotValue();
@@ -105,74 +114,56 @@ int fetchInput()
   return 0;
 }
 
-float psCovertPotValue(int potValue)
-{
+float psCovertPotValue(int potValue) {
   // as pressure should be in range of 5 to 30 cmH2o , we can have range from 0 to 50
-  return map(potValue, 0, 1023, 0, 50); //(potValue/20);
+  return map(potValue, 0, 1023, 0, 50);  //(potValue/20);
 }
 
-float bpmCovertPotValue(int potValue)
-{
+float bpmCovertPotValue(int potValue) {
   // as bpm should be in range of 8 to 25, we can have range from 0 to 40
-  return map(potValue, 0, 1023, 0, 40); //(potValue/25);
+  return map(potValue, 0, 1023, 0, 40);  //(potValue/25);
 }
 
-float tvCovertPotValue(int potValue)
-{
+float tvCovertPotValue(int potValue) {
   // as tidal volume should be in range of 100 to 800 ml/kg, we can have range from 0 to 1023
   return map(potValue, 0, 1023, 0, 1000);
 }
 
-float convertInputValueInSensorRange(int boxIndex, int potValue)
-{
+float convertInputValueInSensorRange(int boxIndex, int potValue) {
   float rval = 0;
 
-  if (boxIndex == 0)
-  {
+  if (boxIndex == 0) {
     // covert pot value to input pressure
     // Serial.println("0");
     rval = pressureInputValue = psCovertPotValue(potValue);
-  }
-  else if (boxIndex == 1)
-  {
+  } else if (boxIndex == 1) {
     // Serial.println("1");
     rval = bmpInputValue = bpmCovertPotValue(potValue);
-  }
-  else if (boxIndex == 2)
-  {
-  }
-  else if (boxIndex == 3)
-  {
+  } else if (boxIndex == 2) {
+  } else if (boxIndex == 3) {
     // Serial.println("3");
     rval = tidalVolumeInput = tvCovertPotValue(potValue);
   }
   return rval;
 }
 
-int blinkAndUpdateBox(int boxIndex, float boxValue)
-{
+int blinkAndUpdateBox(int boxIndex, float boxValue) {
   static int currentBlinker = 0;
   static unsigned int BlinkCounter = 0;
-  static int blinkStatus = 0;
   static int prevBoxValue;
 
-  if (boxIndex != currentBlinker)
-  {
+  if (boxIndex != currentBlinker) {
     BlinkCounter = 0;
     updateBoxValue(currentBlinker, prevBoxValue);
     currentBlinker = boxIndex;
   }
 
-  if (millis() % 100 == 0)
-  {
+  if (millis() % 100 == 0) {
 
-    if (blinkStatus == 0)
-    {
+    if (blinkStatus == 0) {
       // box will be disappeared
       deleteBox(boxIndex);
-    }
-    else
-    {
+    } else {
       // box will be appeared with value
       updateBoxValue(boxIndex, boxValue);
       prevBoxValue = boxValue;
@@ -183,13 +174,12 @@ int blinkAndUpdateBox(int boxIndex, float boxValue)
   return 0;
 }
 
-int updateDisplay()
-{
+int updateDisplay() {
   float potCovertValue = 0;
 
+
   // Box cursor movement
-  if (boxCursorMove == 1 && powerSwitchValue == LOW)
-  {
+  if ((blinkStatus == 1) || (boxCursorMove == 1 && currentPowerSwitchValue == LOW)) {
     // Serial.println("checkpoint 1");
     // get input value and convert into respective in range
     potCovertValue = convertInputValueInSensorRange(currentBOXcounter, currentPotValue);
@@ -197,20 +187,15 @@ int updateDisplay()
     // Serial.println("checkpoint 2");
     // update box with input value
     blinkAndUpdateBox(currentBOXcounter, potCovertValue);
-  }
-  else
-  {
+  } else {
     // display error message
-    if (boxCursorMove == 1 && powerSwitchValue == HIGH)
-    {
+    if (boxCursorMove == 1 && currentPowerSwitchValue == HIGH) {
       // Serial.println("checkpoint 3");
       Serial.print(F("INput cannot set when Ventilator is ON"));
       DisplayErrorMsg("Input can't set if Device is ON");
       delay(1000);
       boxCursorMove = 0;
-    }
-    else
-    {
+    } else {
       // Serial.println("checkpoint 5");
       // Update output Box with value
       boxCursorMove = 0;
@@ -218,47 +203,94 @@ int updateDisplay()
   }
 
   // update Status of operation
+  if (currentPowerSwitchValue == HIGH) {
+    if (displayStatusDone == 0) {
+      DisplayStatus("ON");
+      displayStatusDone = 1;
+    }
+  } else {
+
+
+    if (displayStatusDone == 0) {
+      DisplayStatus("OFF");
+      displayStatusDone = 1;
+    }
+  }
 
   // Update IOT status
 
   return 0;
 }
 
-int getOuputPressure()
-{
-}
-
-int getOuputFlow()
-{
-}
-
-int getOuputVolume()
-{
-}
-
-int updateMotorParameter()
-{
-}
-
-int driveMechanism()
-{
+int getOuputPressure() {
 
   return 0;
 }
 
-int doCallibration()
-{
+int getOuputFlow() {
+
+  return 0;
+}
+
+int getOuputVolume() {
+
+  return 0;
+}
+
+int updateMotorParameter() {
+
+  return 0;
+}
+
+int runVentilator() {
+
+  //run for inhale action
+  //start the motor positive direction with set step agnle
+  //inhale: capture inhale time
+
+
+  //run for exhale action
+  //start the motor negative direction with set step agnle
+  //inhale: capture exhale time
+
+  return 0;
+}
+
+int doCallibration() {
+  // read/fetch the output value :
+  // 1. fetch the output pressure
+  // 2. fetch the output volume
+  // 3. fetch flow rate
+
+
+  // generate deviation in set parameter as well as outout parameter
+
+
+  // calculate the stepper motor input like speed, step, inhales:exhales timingß
   // calculate the speed
 
   // calculate step agnle
 
-  // calculate the ON time and OFF time: ON time is 75% of one cycle and OFF time is 25% of one cycle
+  // calculate the ON time and OFF time base on BPM as well as IE ratio
+
+  //set all value of step ,speed to stepper motor as well as IE value into variable
+  updateMotorParameter();
+
 
   return 0;
 }
 
-void setup()
-{
+int startVentilator() {
+
+  return 0;
+}
+
+int stopVentilator() {
+
+  return 0;
+}
+
+void setup() {
 
   // Serial Uart Initialised
   Serial.begin(9600);
@@ -270,7 +302,7 @@ void setup()
   DisplayWelcomMsg();
   // delay(2000);
 
-  // stepper motor Initialised
+  // stepper motor Initialised and reset motor
 
   // Input Initialised
   Serial.println("Input initialised");
@@ -292,8 +324,7 @@ void setup()
   Serial.println(F("Ventilator is initialised"));
 }
 
-void loop()
-{
+void loop() {
 
   // DisplayDummyUpdate();
   // delay(1000);
@@ -311,51 +342,55 @@ void loop()
    *****************************/
   // sync the input switch value
   rval = fetchInput();
-  if (rval != 0)
-  {
+  if (rval != 0) {
     Serial.println("Failed sync input switch value.Existing");
     DisplayErrorMsg("Input Sync Failed");
     exit(0);
   }
 
-  if (powerSwitchValue == HIGH)
-  {
+  if (currentPowerSwitchValue == HIGH) {
     // start reading pressure sensor
+    getOuputPressure();
 
     // start reading flow sensor
+    getOuputFlow();
+
+    //start reading the volume 
+    getOuputVolume();
 
     // check the callibration
-    if (callibrationDone == false)
-    {
+    if (callibrationDone == false) {
       // do the four five iteration and adjust the value of speed ,step and acceleration motor
 
       // get speed,step and on-off time
       rval = doCallibration();
-      if (rval != 0)
-      {
+      if (rval != 0) {
         Serial.println("Callibration Failed.Existing");
         DisplayErrorMsg("Callibration Failure");
         exit(0);
       }
 
       callibrationDone = true;
-    }
-    else
-    {
+    } else {
       // run hardware driver
-      rval = driveMechanism();
-      if (rval != 0)
-      {
+      if (runVentilatorFlag == false) {
+        startVentilator();
+        runVentilatorFlag = true;
+      }
+
+      rval = runVentilator();
+      if (rval != 0) {
         Serial.println("Hawrdare Drive Failed.Existing");
         DisplayErrorMsg("Hawrdare Drive Failure");
         exit(0);
       }
     }
-     boxCursorMove = 0;
-  }
-  else
-  {
-   
+    boxCursorMove = 0;
+  } else {
+
+    stopVentilator();
+    runVentilatorFlag = false;
+
     callibrationDone = false;
   }
 
@@ -363,15 +398,14 @@ void loop()
 
   // check for iot interval form packet and send packet
 
-/****************************
+  /****************************
  *   process synced data
  *****************************/
-rval = updateDisplay();
-if (rval != 0)
-{
-  Serial.println("Failed Update display with latest value.Existing");
-  DisplayErrorMsg("Updating Display Failed");
-  delay(1000);
-  exit(0);
-}
+  rval = updateDisplay();
+  if (rval != 0) {
+    Serial.println("Failed Update display with latest value.Existing");
+    DisplayErrorMsg("Updating Display Failed");
+    delay(1000);
+    exit(0);
+  }
 }

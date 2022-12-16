@@ -24,6 +24,7 @@ void DisplayMainScreen();
 void DisplayDummyUpdate();
 void DisplayCalibrationMsg();
 void DisplayErrorMsg(char*);
+void DisplayStatus(char *power);
 int deleteBox(int boxIndex);
 int updateBoxValue(int boxIndex,float boxValue);
 
