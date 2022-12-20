@@ -1,10 +1,13 @@
-// #include<AccelStepper.h>
+#include<AccelStepper.h>
 
-// AccelStepper stepper;
+int maximumStepOfMotor=200;
+const int stepPin = 2; 
+const int dirPin = 12;
 
 
-// const int stepPin = 3; 
-// const int dirPin = 4;
+#define motorInterfaceType 1
+AccelStepper stepper(motorInterfaceType, stepPin, dirPin);
+
 
 // int p=400; //ml
 // int q=15;  //bpm 
@@ -16,94 +19,97 @@
 // float t = ((s * 200)/360); //steps for stepper motor
 // //float t;
 // float u = ((60/q) * 10000) - 10000;// time
-// int stepperMotorInit()
-// {
 
-// }
+int stepperMotorInit()
+{
 
-// int stepperMotorSetStep(unsigned int stepValue)
-// {
-    
-// }
-// unsigned int stepperMotorGetStep()
-// {
-//     digitalWrite(dirPin,HIGH); // Enables the motor to move in a particular direction
-//   // Makes 200 pulses for making one full cycle rotation
+}
+
+int stepperMotorSetStep(int stepValue)
+{
+   stepper.moveTo(stepValue);
+   return 0;
+}
+
+
+int stepperMotorGetStep()
+{
+   return stepper.currentPosition();
+}
+
+int stepperMotordistanceToGo()
+{
+   return stepper.distanceToGo();
+}
+
+int stepperMotorSetSpeed(unsigned int speedValue)
+{
+  stepper.setSpeed(speedValue);
+  return 0;
+}
+
+int stepperMotorSetAcceleration(unsigned int accel)
+{
+    stepper.setAcceleration(accel);
+    return 0;
+}
+
+unsigned int stepperMotorGetSpeed( )
+{  
+  return stepper.speed();
+
+}
+
+void stepperMotorStart()
+{
+  stepper.enableOutputs ();
+}
+
+void stepperMotorStop()
+{
+
+  stepper.disableOutputs ();
+}
+
+int stepperMotorRun()
+{
+  return stepper.run();
+}
+
+int stepperMotorReturnInitialPosition()
+{
   
-//     for(int x = 0; x < t; x++) {
-//     digitalWrite(stepPin,HIGH); 
-//     delayMicroseconds(1000); 
-//     digitalWrite(stepPin,LOW); 
-//     delayMicroseconds(1000); 
-//     }
-//     delay(1000);// One second delay
+  return 0;
+
+}
+
+int stepperMotorReset()
+{
   
-//     digitalWrite(dirPin,LOW); //Changes the rotations direction
-//   // Makes 400 pulses for making two full cycle rotation
-  
-//     for(int x = 0; x < t; x++) {
-//         digitalWrite(stepPin,HIGH);
-//         delayMicroseconds(u);
-//         digitalWrite(stepPin,LOW);
-//         delayMicroseconds(u);
-//     }
-//     delay(1000);
+  return 0;
 
-// }
+}
+int stepperMotorGetTorque()
+{
 
-// int stepperMotorSetSpeed(unsigned int speedValue)
-// {
-//   stepper.setSpeed(speedValue);
-//   Serial.println("Set Speed");
-// }
+  return 0;
 
-// unsigned int stepperMotorGetSpeed( )
-// {  
-//   stepper.runSpeed();
-//   Serial.println("Get speed");
-// }
+}
+int stepperMotorSetTorque()
+{
 
-// void stepperMotorStart()
-// {
-//   stepper.enableOutputs ();
-// }
-// void stepperMotorStop()
-// {
-//   stepper.disableOutputs ();
-// }
-// int stepperMotorReset()
-// {
+  return 0;
+}
 
-// }
-// int stepperMotorGetTorque()
-// {
+int stepperMotorGetCurrentConsumption()
+{
 
-// }
-// int stepperMotorSetTorque()
-// {
+  return 0;
 
-// }
+}
 
-// int stepperMotorGetCurrentConsumption()
-// {
-
-// }
-
-// int stepperMotorGetCurrentVoltage()
-// {
-
-// }
-
-// void setup() {
-//  // stepperMotorSetSpeed();
-//   //stepperMotorGetSpeed();
-//   //stepperMotorGetStep();
-
-//   // put your setup code here, to run once:
-// }
-
-// void loop() {
-//   // put your main code here, to run repeatedly:
-
-// }
+int stepperMotorGetCurrentVoltage()
+{
+  return 0;
+}
 

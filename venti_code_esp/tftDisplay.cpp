@@ -99,6 +99,7 @@ void DisplayWelcomMsg() {
   DisplayWriteText(20, 45, 3, "Welcome", ST77XX_WHITE);
   DisplayWriteText(40, 75, 1, "Powered by Accenture", ST77XX_GREEN);
 }
+
 void DisplayDummyUpdate() {
   //remove it.Only for test
   tft.fillRect(X + 1, Y + 16, X + 58, 18, ST77XX_BLACK);
@@ -130,6 +131,8 @@ void DisplayDummyUpdate() {
 }
 void DisplayMainScreen() {
   int colour = ST77XX_GREEN;
+  int boxIndex =0;
+
   DisplayClear();
   //lines draw on screen
   tft.drawLine(0, 20, tft.width() - 1, 20, colour);
@@ -139,22 +142,29 @@ void DisplayMainScreen() {
   DisplayWriteText(5, 5, 1, "Status:", ST77XX_WHITE);
 
   //Input pressure
+  boxIndex =0;
   DisplayWriteText(X, Y + 2, 1, "Pressure I/P", ST77XX_WHITE);
   tft.drawRect(X, Y + 15, X + 60, 20, colour);
+  DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"0.0", BOXES[boxIndex].txtColour);
 
 
   //output pressure
+  boxIndex =2;
   DisplayWriteText(X, Y + 45, 1, "Pressure O/P", ST77XX_WHITE);
   tft.drawRect(X, Y + 60, X + 60, 20, colour);
-
+  DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"NA", BOXES[boxIndex].txtColour);
 
   //input BPM
+  boxIndex =1;
   DisplayWriteText(X + tft.width() / 2 + 15, Y + 2, 1, "BPM", ST77XX_WHITE);
   tft.drawRect(X + tft.width() / 2, Y + 15, X + 60, 20, colour);
+   DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"0.0", BOXES[boxIndex].txtColour);
 
   //input Tidal volume
+  boxIndex =3;
   DisplayWriteText(X + tft.width() / 2 + 5, Y + 45, 1, "Tidal I/P", ST77XX_WHITE);
   tft.drawRect(X + tft.width() / 2, Y + 60, X + 60, 20, colour);
+   DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"0.0", BOXES[boxIndex].txtColour);
 }
 
 int getWidthDisplay()
