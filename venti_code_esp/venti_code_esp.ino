@@ -31,6 +31,8 @@ int tidalVolumeOutput = 0;
 int ieratioHardcode = 4;
 
 int motorSpeed = 0;
+int motordelayClock = 0;
+int motordelayAntiClock = 0;
 int motorStep = 0;
 int oneCycleTime = 0;
 int inHaleTime = 0;
@@ -297,6 +299,7 @@ int runVentilator()
   static bool inhaleStart = false;
   static bool exhaleStart = false;
   static int milliStart = 0;
+  int currentStep=0;
 
   // run for inhale action
   // start the motor positive direction with set step angle
@@ -305,20 +308,31 @@ int runVentilator()
   {
     if (inhaleStart == false)
     {
-      stepperMotorSetSpeed(motorSpeed);
-      stepperMotorSetAcceleration(motorSpeed);
+      // stepperMotorSetSpeed(motorSpeed);
+
+      // stepperMotorSetAcceleration(motorSpeed);
+      stepperMotorSetDelayForStep(motordelayClock);
       stepperMotorSetStep(motorStep);
       milliStart = millis() + inHaleTime;
       inhaleStart = true;
-      Serial.println(("Ventilation:Inhale Start"));
+      Serial.print(("Ventilation:Inhale Start:"));
+      Serial.println(milliStart);
+      Serial.print("Ventilation:current time:");
+      Serial.println(millis());
       stepperMotorRun();
     }
     else
     {
+       ///Serial.println("a");
       if (milliStart >= millis())
       {
-        if (stepperMotordistanceToGo() ==0)
-          stepperMotorRun();
+        currentStep=stepperMotordistanceToGo();
+        
+        if (currentStep!=0)
+        {
+            stepperMotorRun();
+            Serial.println(currentStep);
+        }
       }
       else
       {
@@ -327,6 +341,7 @@ int runVentilator()
         ventilation = 1;
         exhaleStart = false;
         milliStart = 0;
+        inhaleStart=false;
       }
     }
   }
@@ -334,19 +349,32 @@ int runVentilator()
   {
     if (exhaleStart == false)
     {
-      stepperMotorSetSpeed(motorSpeed);
-      stepperMotorSetAcceleration(motorSpeed);
+      // stepperMotorSetSpeed(motorSpeed);
+      // stepperMotorSetAcceleration(motorSpeed);
+      stepperMotorSetDelayForStep(motordelayAntiClock);
       stepperMotorSetStep(-motorStep);
       milliStart = millis() + exHaleTime;
       exhaleStart = true;
-      Serial.println("Ventilation:exhale Start");
+
+      Serial.print("Ventilation:exhale Start:");
+      Serial.println(milliStart);
+      Serial.print("Ventilation:current time:");
+      Serial.println(millis());
+
+      stepperMotorRun();
     }
     else
     {
+      //Serial.println("b");
       if (milliStart >= millis())
       {
-        if (stepperMotordistanceToGo()==0)
-          stepperMotorRun();
+        currentStep=stepperMotordistanceToGo();
+
+         if (currentStep!=0)
+        {
+            stepperMotorRun();
+            Serial.println(currentStep);
+        }
       }
       else
       {
@@ -355,6 +383,7 @@ int runVentilator()
         ventilation = 0;
         exhaleStart = false;
         milliStart = 0;
+        inhaleStart=false;
       }
     }
   }
@@ -382,8 +411,6 @@ int doCallibration()
   inHaleTime = oneCycleTime / ieratioHardcode;
   exHaleTime = oneCycleTime - inHaleTime;
 
-  // calculate the speed
-  motorSpeed = 200;
 
   // calculate step angle
   /*
@@ -398,6 +425,11 @@ int doCallibration()
       X(input)  ---> steps                = (100*X)/1350 = 0.07408 * X
   */
   motorStep = 0.07408 * tidalVolumeInput;
+
+  // calculate the speed and delya between each step while rotationg clockwise and anti-clock wise
+  motorSpeed = 200;
+  motordelayClock = (inHaleTime*1000)/(2*motorStep);
+  motordelayAntiClock = (exHaleTime*1000)/(2*motorStep);
 
   // set all value of step ,speed to stepper motor as well as IE value into variable
   updateMotorParameter();
@@ -514,6 +546,24 @@ void loop()
       // run hardware driver
       if (runVentilatorFlag == false)
       {
+        Serial.print(("Step of Motor:"));
+        Serial.println(motorStep);
+
+        Serial.print(("Motor step delay-clock:"));
+        Serial.println(motordelayClock);
+
+        Serial.print(("Motor step delay-anticlock:"));
+        Serial.println(motordelayAntiClock);
+
+        Serial.print(("Motor speed:"));
+        Serial.println(motorSpeed);
+
+        Serial.print(("Inhale Time:"));
+        Serial.println(inHaleTime);
+
+        Serial.print(("exhale Time:"));
+        Serial.println(exHaleTime);
+
         displayStatusDone=0;
         DisplayMainScreen();
         updateBoxValue(0, pressureInputValue);
@@ -558,3 +608,6 @@ void loop()
     exit(0);
   }
 }
+
+ 
+ 

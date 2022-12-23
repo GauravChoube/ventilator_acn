@@ -1,16 +1,16 @@
 
-#include<math.h>
-const int stepPin = 3; 
-const int dirPin = 4; 
-int p= 800; //ml
-int q= 15; //bpm
-float r = (0.056 * p); //% of ambu bag compression
+// #include<math.h>
+// const int stepPin = 3; 
+// const int dirPin = 4; 
+// int p= 800; //ml
+// int q= 15; //bpm
+// float r = (0.056 * p); //% of ambu bag compression
 
-float s = (r * 2.4); //degrees for the rotation of stepper motor
+// float s = (r * 2.4); //degrees for the rotation of stepper motor
 
-float t = (s * 0.056); //steps for stepper motor
+// float t = (s * 0.056); //steps for stepper motor
 
-float u = ((60/q) * 1000) - 1000;
+// float u = ((60/q) * 1000) - 1000;
 
 
 
