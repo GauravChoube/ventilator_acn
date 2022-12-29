@@ -45,18 +45,18 @@ int stepperMotorSetStep(int stepValue)
 {
   //  stepper.moveTo(stepValue);
 
-  Serial.begin(9600);
+  // Serial.begin(9600);
 
   if(stepValue <0)
   {
     dir=-1;
-    Serial.println(F("-ve direction:"));
+    // Serial.println(F("-ve direction:"));
     //anticlockwise direction
       digitalWrite(dirPin, LOW);
   }
   else
   {
-    Serial.println(F("+ve direction:"));
+    // Serial.println(F("+ve direction:"));
     //clokcwise direction
      digitalWrite(dirPin, HIGH);
      dir=1;
@@ -129,6 +129,8 @@ void stepperMotorStop()
   // stepper.disableOutputs ();
   currentStep=0;
   targetStep=0;
+  digitalWrite(stepPin,LOW);
+
 }
 
 int stepperMotorRun()

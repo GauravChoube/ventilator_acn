@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
-#include <aREST.h>
+// #include <aREST.h>
 const char* ssid = "admin";
 const char* password = "12345678";
 // Change the variable to your Raspberry Pi IP address, so it connects to your MQTT broker
@@ -58,6 +58,19 @@ void reconnect() {
     }
   }
 }
+void getIOTParameter()
+{
+  // get all parameter
+  // form final json payload string
+  // store into buffer
+}
+
+int sendIOTParameter()
+{
+// check buffer is there
+//publish data  
+}
+
 void iotparameters() {
   float ipPressure = 100;
   float opPressure = 200;

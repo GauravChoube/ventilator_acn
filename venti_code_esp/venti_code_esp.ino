@@ -15,6 +15,8 @@ static bool displayStatusDone = 0;
 
 int powerSwitchValue = 0;
 int currentPowerSwitchValue = 0;
+int turnONVentilator=0;
+int turnOFFVentilator=0;
 
 int curentLeftButtonValue = 0;
 int currentRightButtonValue = 0;
@@ -38,8 +40,9 @@ int oneCycleTime = 0;
 int inHaleTime = 0;
 int exHaleTime = 0;
 
-bool callibrationDone = false;
-bool runVentilatorFlag=false;
+bool callibration = false;
+bool callibrationDone=false;
+bool ventilatorIsRunning=false;
 
 int fetchInput()
 {
@@ -53,7 +56,7 @@ int fetchInput()
     curentLeftButtonValue = buttonValue;
 
     Serial.print(("LeftButtonValue:"));
-    Serial.println(curentLeftButtonValue);
+    Serial.print(curentLeftButtonValue);
 
     if (curentLeftButtonValue == 1)
     {
@@ -67,7 +70,7 @@ int fetchInput()
       if (currentBOXcounter == 2)
         currentBOXcounter = 1;
 
-      Serial.print(("currentBOXcounter:"));
+      Serial.print(("   currentBOXcounter:"));
       Serial.println(currentBOXcounter);
     }
   }
@@ -80,7 +83,7 @@ int fetchInput()
     currentRightButtonValue = buttonValue;
 
     Serial.print(("RightButtonValue:"));
-    Serial.println(currentRightButtonValue);
+    Serial.print(currentRightButtonValue);
 
     if (currentRightButtonValue == 1)
     {
@@ -93,7 +96,7 @@ int fetchInput()
       if (currentBOXcounter == 2)
         currentBOXcounter = 3;
 
-      Serial.print(("currentBOXcounter:"));
+      Serial.print(("   currentBOXcounter:"));
       Serial.println(currentBOXcounter);
     }
   }
@@ -106,6 +109,12 @@ int fetchInput()
     if (powerSwitchValue == 0)
     {
       currentPowerSwitchValue ^= 0x01;
+
+      if(currentPowerSwitchValue==1)
+          turnONVentilator=1;
+      else if(currentPowerSwitchValue==0)
+          turnOFFVentilator=1;
+          
       displayStatusDone = 0;
     }
   }
@@ -247,8 +256,10 @@ int updateDisplay()
   {
     if (displayStatusDone == 0)
     {
+      
       DisplayStatus("ON");
       displayStatusDone = 1;
+      Serial.println("Ventilator Start\n====================\n");
     }
   }
   else
@@ -256,8 +267,10 @@ int updateDisplay()
 
     if (displayStatusDone == 0)
     {
+     
       DisplayStatus("OFF");
       displayStatusDone = 1;
+       Serial.println("====================\nVentilator Stop\n");
     }
   }
 
@@ -315,10 +328,11 @@ int runVentilator()
       stepperMotorSetStep(motorStep);
       milliStart = millis() + inHaleTime;
       inhaleStart = true;
-      Serial.print(("Ventilation:Inhale Start:"));
-      Serial.println(milliStart);
+      
       Serial.print("Ventilation:current time:");
-      Serial.println(millis());
+      Serial.print(millis());
+      Serial.print(("   Ventilation:Inhale End at:"));
+      Serial.println(milliStart);
       stepperMotorRun();
     }
     else
@@ -331,7 +345,7 @@ int runVentilator()
         if (currentStep!=0)
         {
             stepperMotorRun();
-            Serial.println(currentStep);
+            //Serial.println(currentStep);
         }
       }
       else
@@ -349,17 +363,15 @@ int runVentilator()
   {
     if (exhaleStart == false)
     {
-      // stepperMotorSetSpeed(motorSpeed);
-      // stepperMotorSetAcceleration(motorSpeed);
+     
       stepperMotorSetDelayForStep(motordelayAntiClock);
       stepperMotorSetStep(-motorStep);
       milliStart = millis() + exHaleTime;
       exhaleStart = true;
-
-      Serial.print("Ventilation:exhale Start:");
-      Serial.println(milliStart);
       Serial.print("Ventilation:current time:");
-      Serial.println(millis());
+      Serial.print(millis());
+      Serial.print("    Ventilation:exhale End:");
+      Serial.println(milliStart);
 
       stepperMotorRun();
     }
@@ -373,7 +385,7 @@ int runVentilator()
          if (currentStep!=0)
         {
             stepperMotorRun();
-            Serial.println(currentStep);
+           // Serial.println(currentStep);
         }
       }
       else
@@ -488,14 +500,6 @@ void loop()
   // DisplayDummyUpdate();
   // delay(1000);
 
-  // int buttonState = digitalRead(10);
-  // // print out the state of the button:
-  // Serial.println(buttonState);
-
-  // // buttonState = digitalRead(16);
-  // // // print out the state of the button:
-  // // Serial.println(buttonState);
-
   /****************************
    *   Get sync the all data
    *****************************/
@@ -508,7 +512,17 @@ void loop()
     exit(0);
   }
 
-  if (currentPowerSwitchValue == HIGH)
+  if(turnONVentilator==1)
+  {
+    //start the ventilator
+
+    turnONVentilator=0;
+    ventilatorIsRunning=1;
+    boxCursorMove = 0;    
+
+  }
+
+  if(ventilatorIsRunning==1)
   {
     // start reading pressure sensor
     getOuputPressure();
@@ -520,7 +534,7 @@ void loop()
     getOuputVolume();
 
     // check the callibration
-    if (callibrationDone == false)
+    if (callibration == false)
     {
       // do the four five iteration and adjust the value of speed ,step and acceleration motor
       DisplayCalibrationMsg();
@@ -536,32 +550,30 @@ void loop()
       else
       {
           delay(2000);
-          callibrationDone = true;
+          callibration = true;
       }
-
-      
+      callibrationDone=false;
     }
     else
     {
-      // run hardware driver
-      if (runVentilatorFlag == false)
+      if (callibrationDone == false)
       {
-        Serial.print(("Step of Motor:"));
+        Serial.print(("Step of Motor                     : "));
         Serial.println(motorStep);
 
-        Serial.print(("Motor step delay-clock:"));
+        Serial.print(("Motor step delay-clock in uS      : "));
         Serial.println(motordelayClock);
 
-        Serial.print(("Motor step delay-anticlock:"));
+        Serial.print(("Motor step delay-anticlock in uS  : "));
         Serial.println(motordelayAntiClock);
 
-        Serial.print(("Motor speed:"));
+        Serial.print(("Motor speed                       : "));
         Serial.println(motorSpeed);
 
-        Serial.print(("Inhale Time:"));
+        Serial.print(("Inhale Time in ms                 : "));
         Serial.println(inHaleTime);
 
-        Serial.print(("exhale Time:"));
+        Serial.print(("exhale Time in ms                 : "));
         Serial.println(exHaleTime);
 
         displayStatusDone=0;
@@ -570,31 +582,47 @@ void loop()
         updateBoxValue(1, bmpInputValue);
         updateBoxValue(3, tidalVolumeInput);
         startVentilator();
-        runVentilatorFlag = true;
-      }
+        
 
-      rval = runVentilator();
-      if (rval != 0)
-      {
-        Serial.println("Hardware Drive Failed.Existing");
-        DisplayErrorMsg("Hardware Drive Failure");
-        exit(0);
+        Serial.println(("Starting The Ventilator"));
+        callibrationDone=true;
       }
     }
-    boxCursorMove = 0;
+    rval = runVentilator();
+    if (rval != 0)
+    {
+      Serial.println("Hardware Drive Failed.Existing");
+      DisplayErrorMsg("Hardware Drive Failure");
+      exit(0);
+    }
+
   }
-  else
+
+  if(turnOFFVentilator==1)
   {
+    //start the ventilator
 
+    turnOFFVentilator=0;
+    ventilatorIsRunning=0;
     stopVentilator();
-    runVentilatorFlag = false;
-
-    callibrationDone = false;
+    callibration = false;    
+    
   }
+
 
   // motor current and voltage
 
   // check for iot interval form packet and send packet
+
+    //check for ventilator start
+    //currentPowerSwitchValue=0 off
+
+
+    //check for ventilator stop
+    //currentPowerSwitchValue=1 on
+
+    //check if ventilator runnning , send the latest value every 5 sec
+    //ventilatorIsRunning
 
   /****************************
    *   process synced data
