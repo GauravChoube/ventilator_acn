@@ -152,7 +152,7 @@ void DisplayMainScreen() {
   boxIndex =2;
   DisplayWriteText(X, Y + 45, 1, "Pressure O/P", ST77XX_WHITE);
   tft.drawRect(X, Y + 60, X + 60, 20, colour);
-  DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"NA", BOXES[boxIndex].txtColour);
+  DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"0.0", BOXES[boxIndex].txtColour);
 
   //input BPM
   boxIndex =1;
