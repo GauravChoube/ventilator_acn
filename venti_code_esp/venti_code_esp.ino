@@ -10,6 +10,10 @@
 #include "pressureSensor.hpp"
 #include "tftDisplay.hpp"
 
+#include <SoftwareSerial.h>
+
+#define SOFT_ENABLE
+
 int rval = 0xff;
 int currentBOXcounter = 0;
 int boxCursorMove = 0;
@@ -27,10 +31,10 @@ int currentPotValue = 0;
 
 int pressureInputValue = 0;
 int pressureOutputValue = 0;
-int currentPressureOutputValue=0;
+int currentPressureOutputValue = 0;
 
 int bmpInputValue = 0;
-float flowRate=0;
+float flowRate = 0;
 
 int tidalVolumeInput = 0;
 int tidalVolumeOutput = 0;
@@ -42,8 +46,8 @@ int motorSpeed = 0;
 int motordelayClock = 0;
 int motordelayAntiClock = 0;
 int motorStep = 0;
-float motorCurrent=0;
-float motorVoltage=0;
+float motorCurrent = 0;
+float motorVoltage = 0;
 
 int oneCycleTime = 0;
 int inHaleTime = 0;
@@ -54,10 +58,16 @@ bool callibrationDone = false;
 bool ventilatorIsRunning = false;
 
 bool iotPayloadRedy = false;
-bool iotconnectionDisconnected=false;
-int iotTime=0;
+bool iotconnectionDisconnected = false;
+int iotTime = 0;
 
 char payload[1000];
+
+//softserial
+// Set up a new SoftwareSerial object
+#define rxPin 2
+#define txPin 12
+SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
 
 int fetchInput() {
   // Serial.println("reading LeftButtonValue:");
@@ -253,9 +263,8 @@ int updateDisplay() {
     }
   }
 
-  if(currentPressureOutputValue != pressureOutputValue)
-  {
-    currentPressureOutputValue=pressureOutputValue;
+  if (currentPressureOutputValue != pressureOutputValue) {
+    currentPressureOutputValue = pressureOutputValue;
     updateBoxValue(2, currentPressureOutputValue);
   }
 
@@ -383,6 +392,17 @@ int formIOTPayload() {
   return 0;
 }
 
+void softsendtoarduino(int state, int dir, int delay, int step) {
+
+  char softBuff[100];
+  //*msgtype;state;dir;step;delay#
+  char *format = "*%d;%d;%d;%d;%d#";
+   sprintf(softBuff, format, 1, state, dir, step, delay);
+  Serial.print("Soft send cmd: ");
+  Serial.println(softBuff);
+  mySerial.print(softBuff);
+}
+
 int runVentilator() {
   static int ventilation = 0;
   static bool inhaleStart = false;
@@ -398,8 +418,11 @@ int runVentilator() {
       // stepperMotorSetSpeed(motorSpeed);
 
       // stepperMotorSetAcceleration(motorSpeed);
+  #ifndef SOFT_ENABLE
       stepperMotorSetDelayForStep(motordelayClock);
       stepperMotorSetStep(motorStep);
+#endif
+      
       milliStart = millis() + inHaleTime;
       inhaleStart = true;
 
@@ -407,14 +430,23 @@ int runVentilator() {
       Serial.print(millis());
       Serial.print(("   Ventilation:Inhale End at:"));
       Serial.println(milliStart);
+
+#ifdef SOFT_ENABLE
+      softsendtoarduino(1, 1, motordelayClock, motorStep);
+#else
       stepperMotorRun();
+#endif
+
+
     } else {
       ///Serial.println("a");
       if (milliStart >= millis()) {
         currentStep = stepperMotordistanceToGo();
 
         if (currentStep != 0) {
+#ifndef SOFT_ENABLE
           stepperMotorRun();
+#endif
           //Serial.println(currentStep);
         }
       } else {
@@ -428,9 +460,12 @@ int runVentilator() {
     }
   } else if (ventilation == 1) {
     if (exhaleStart == false) {
-
+      
+#ifndef SOFT_ENABLE
       stepperMotorSetDelayForStep(motordelayAntiClock);
       stepperMotorSetStep(-motorStep);
+#endif
+
       milliStart = millis() + exHaleTime;
       exhaleStart = true;
       Serial.print("Ventilation:current time:");
@@ -438,14 +473,21 @@ int runVentilator() {
       Serial.print("    Ventilation:exhale End:");
       Serial.println(milliStart);
 
+#ifdef SOFT_ENABLE
+      softsendtoarduino(1, 0, motordelayAntiClock, motorStep);
+#else
       stepperMotorRun();
+#endif
+
     } else {
       //Serial.println("b");
       if (milliStart >= millis()) {
         currentStep = stepperMotordistanceToGo();
 
         if (currentStep != 0) {
+#ifndef SOFT_ENABLE
           stepperMotorRun();
+#endif
           // Serial.println(currentStep);
         }
       } else {
@@ -513,7 +555,12 @@ int startVentilator() {
 }
 
 int stopVentilator() {
+#ifndef SOFT_ENABLE
   stepperMotorStop();
+#else
+  softsendtoarduino(0, 0, 0, 0);
+#endif
+
   return 0;
 }
 
@@ -523,13 +570,18 @@ void setup() {
   Serial.begin(9600);
   Serial.println(F("Ventilator Debug is ready."));
 
+
   // Display Initialised
   DisplayInit();
   Serial.println(F("TFT Display Initialised Successfully"));
   DisplayWelcomMsg();
 
-  // stepper motor Initialised and reset motor
-
+// stepper motor Initialised and reset motor
+#ifdef SOFT_ENABLE
+  mySerial.begin(4800);
+#else
+  stepperMotorInit();
+#endif
   // Input Initialised
   Serial.println("Input initialised");
   inputInit();
@@ -621,7 +673,7 @@ void loop() {
         Serial.print(("exhale Time in ms                 : "));
         Serial.println(exHaleTime);
 
-        ambuCompression=tidalVolumeInput*0.060607;
+        ambuCompression = tidalVolumeInput * 0.060607;
 
         displayStatusDone = 0;
         DisplayMainScreen();
@@ -660,32 +712,24 @@ void loop() {
   // motor current and voltage
 
   // iot packet
-  if (isConnectedToWifi() == 1) 
-  {
-    if((millis()-iotTime)>5000)
-      {
-        iotconnectionDisconnected=false;
-      }
+  if (isConnectedToWifi() == 1) {
+    if ((millis() - iotTime) > 5000) {
+      iotconnectionDisconnected = false;
+    }
 
-    if ((iotconnectionDisconnected==false) && (mqttConnect() == MQTT_CONNECTED)) 
-    {
-      iotconnectionDisconnected=false;
-      if (iotPayloadRedy == true) 
-      {
+    if ((iotconnectionDisconnected == false) && (mqttConnect() == MQTT_CONNECTED)) {
+      iotconnectionDisconnected = false;
+      if (iotPayloadRedy == true) {
         sendIOTParameter(payload);
         Serial.println("Iot Payload Send Successfully");
         iotPayloadRedy = false;
       }
       keepAlive();
-    } 
-    else 
-    {
-      if(iotconnectionDisconnected==false)
-      {
-        iotconnectionDisconnected=true;
-        iotTime=millis();
+    } else {
+      if (iotconnectionDisconnected == false) {
+        iotconnectionDisconnected = true;
+        iotTime = millis();
       }
-  
     }
   }
 
