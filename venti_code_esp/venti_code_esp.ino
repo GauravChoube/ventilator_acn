@@ -630,7 +630,10 @@ void loop() {
     boxCursorMove = 0;
 
     //reset the motor mean back to zero positon using ir sensor
-    softsendtoarduino(0, 1,0,0,0);
+    //0 - stop 
+    //1-  start
+    //2- reset
+    softsendtoarduino(2, 1,0,0,0);
 
   }
 

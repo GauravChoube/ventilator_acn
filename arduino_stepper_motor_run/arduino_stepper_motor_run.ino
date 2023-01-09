@@ -19,7 +19,7 @@ char indexU = 0;
 char stepcnt = 0;
 bool dataisready = 0;
 bool motorResetRequested = 0;
-
+bool powerState=0;
 
 char inhaleTimeStr[10];
 unsigned long inHaleTime = 0;
@@ -36,6 +36,7 @@ static int ventilation = 0;
 static bool inhaleStart = false;
 static bool exhaleStart = false;
 
+unsigned char currentMessagetype=0;
 
 
 
@@ -180,19 +181,23 @@ void loop() {
         indexU = 0;
         break;
       case '#':
-        cnt = 10;
-        dataisready = true;
+        
+        if(currentMessagetype!=2)
+            dataisready = true;
+          cnt = 10;
+          powerState=state;
         break;
 
       default:
         {
           //*msgtype;state;step;inhaletime;exhaletime#
           if (cnt == 0) {
-             if((c-48)==0)
+            currentMessagetype = c-48;
+             if(currentMessagetype==2)
              {
                 motorResetRequested=1;
              } 
-          } else if (cnt == 1) {
+          } else if ((cnt == 1) && (currentMessagetype!=2)) {
             state = c - 48;
           } else if (cnt == 2) {
             step[indexU++] = c;
@@ -245,12 +250,12 @@ void loop() {
     dataisready = false;
   }
 
-  if (state == 1) 
+  if (powerState == 1) 
   {
 
     runVentilator();
 
-  } else if (state == 0) 
+  } else if (powerState == 0) 
   {
     ventilation = 0;
     exhaleStart = false;
