@@ -22,9 +22,9 @@ bool motorResetRequested = 0;
 
 
 char inhaleTimeStr[10];
-long inHaleTime = 0;
+unsigned long inHaleTime = 0;
 char exhaleTimeStr[10];
-long exHaleTime = 0;
+unsigned long exHaleTime = 0;
 
 
 
@@ -41,7 +41,7 @@ static bool exhaleStart = false;
 
 int runVentilator() {
 
-  static int milliStart = 0;
+  static unsigned long milliStart = 0;
   int currentStep = 0;
 
 
@@ -50,6 +50,7 @@ int runVentilator() {
   // inhale: capture inhale time
   if (ventilation == 0) 
   {
+    //Serial.println("a");
     if (inhaleStart == false) 
     {
 
@@ -94,6 +95,7 @@ int runVentilator() {
     }
   }else if (ventilation == 1) 
   {
+    //Serial.println("b");
     if (exhaleStart == false) 
     {
 
