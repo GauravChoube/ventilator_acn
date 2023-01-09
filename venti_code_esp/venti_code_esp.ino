@@ -562,7 +562,7 @@ int stopVentilator() {
 #ifndef SOFT_ENABLE
   stepperMotorStop();
 #else
-  softsendtoarduino(0, 0, 0, 0);
+  softsendtoarduino(0, 0, 0, 0,0);
 #endif
 
   return 0;

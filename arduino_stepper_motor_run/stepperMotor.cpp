@@ -1,9 +1,12 @@
 #include<AccelStepper.h>
 
 int maximumStepOfMotor=200;
-const int stepPin = 2; 
-const int dirPin = 12;
-
+//nodemcu one
+// const int stepPin = 2; 
+// const int dirPin = 12;
+// arduino one
+const int stepPin = 5;
+const int dirPin = 4;
 
 // #define motorInterfaceType 1
 // AccelStepper stepper(motorInterfaceType, stepPin, dirPin);
