@@ -27,7 +27,7 @@ void DisplayErrorMsg(char*);
 void DisplayStatus(char *power);
 int deleteBox(int boxIndex);
 int updateBoxValue(int boxIndex,float boxValue);
-
+void DisplayWifiStatus(char *);
 int getWidthDisplay();
 int getHeightDisplay();
 int getWidthFromMAcro();

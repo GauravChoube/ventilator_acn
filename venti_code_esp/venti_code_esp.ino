@@ -61,6 +61,9 @@ bool iotPayloadRedy = false;
 bool iotconnectionDisconnected = false;
 int iotTime = 0;
 
+unsigned char state=0;
+unsigned char currentState;
+
 char payload[1000];
 
 //softserial
@@ -392,12 +395,12 @@ int formIOTPayload() {
   return 0;
 }
 
-void softsendtoarduino(int state, int dir, int delay, int step) {
+void softsendtoarduino(int msgType,int state,int inhaleTime,int exhaleTime ,int step) {
 
   char softBuff[100];
-  //*msgtype;state;dir;step;delay#
+  //*msgtype;state;step;inhaletime;exhaletime#
   char *format = "*%d;%d;%d;%d;%d#";
-   sprintf(softBuff, format, 1, state, dir, step, delay);
+   sprintf(softBuff, format, msgType, state, step,inhaleTime, exhaleTime);
   Serial.print("Soft send cmd: ");
   Serial.println(softBuff);
   mySerial.print(softBuff);
@@ -432,7 +435,7 @@ int runVentilator() {
       Serial.println(milliStart);
 
 #ifdef SOFT_ENABLE
-      softsendtoarduino(1, 1, motordelayClock, motorStep);
+      //softsendtoarduino(1, 1,inHaleTime,exHaleTime,motorStep);
 #else
       stepperMotorRun();
 #endif
@@ -474,7 +477,8 @@ int runVentilator() {
       Serial.println(milliStart);
 
 #ifdef SOFT_ENABLE
-      softsendtoarduino(1, 0, motordelayAntiClock, motorStep);
+      // softsendtoarduino(1, 0, motordelayAntiClock, motorStep);
+      //softsendtoarduino(1, 1,inHaleTime,exHaleTime,motorStep);
 #else
       stepperMotorRun();
 #endif
@@ -594,7 +598,6 @@ void setup() {
 
   // IOT application Initialised
   setup_wifi();
-  mqttConnect();
 
 
   // display main page
@@ -625,6 +628,10 @@ void loop() {
     turnONVentilator = 0;
     ventilatorIsRunning = 1;
     boxCursorMove = 0;
+
+    //reset the motor mean back to zero positon using ir sensor
+    softsendtoarduino(0, 1,0,0,0);
+
   }
 
   if (ventilatorIsRunning == 1) {
@@ -649,6 +656,8 @@ void loop() {
         DisplayErrorMsg("Callibration Failure");
         exit(0);
       } else {
+        // need chnage this logic if calibration logic added. As right now there is no callibration
+        softsendtoarduino(1, 1,inHaleTime,exHaleTime,motorStep);        
         delay(2000);
         callibration = true;
       }
@@ -689,12 +698,15 @@ void loop() {
         formIOTPayload();
       }
     }
+
+  #ifndef SOFT_ENABLE
     rval = runVentilator();
     if (rval != 0) {
       Serial.println("Hardware Drive Failed.Existing");
       DisplayErrorMsg("Hardware Drive Failure");
       exit(0);
     }
+  #endif
   }
 
   if (turnOFFVentilator == 1) {
@@ -712,7 +724,8 @@ void loop() {
   // motor current and voltage
 
   // iot packet
-  if (isConnectedToWifi() == 1) {
+  if (isConnectedToWifi() == 1) 
+  {
     if ((millis() - iotTime) > 5000) {
       iotconnectionDisconnected = false;
     }
@@ -725,7 +738,9 @@ void loop() {
         iotPayloadRedy = false;
       }
       keepAlive();
-    } else {
+    } 
+    else 
+    {
       if (iotconnectionDisconnected == false) {
         iotconnectionDisconnected = true;
         iotTime = millis();
@@ -733,7 +748,30 @@ void loop() {
     }
   }
 
+  
 
+  if (isConnectedToWifi() == 1) 
+  {
+   // Serial.println("1");
+    state=1;
+    if(state!=currentState)
+    {
+       DisplayWifiStatus("ON");
+      currentState=state;
+    }
+
+  }
+  else
+  {
+    //Serial.println("0");
+    state=0;
+    if(state!=currentState)
+    {
+       DisplayWifiStatus("OFF");
+      currentState=state;
+    }
+
+  }
 
 
   /****************************

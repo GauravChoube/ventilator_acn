@@ -94,6 +94,8 @@ int DisplayWriteValue(unsigned char x, unsigned char y, int width, float value, 
   return 0;
 }
 
+
+
 void DisplayWelcomMsg() {
   DisplayClear();
   DisplayWriteText(20, 45, 3, "Welcome", ST77XX_WHITE);
@@ -141,6 +143,9 @@ void DisplayMainScreen() {
   //status bar
   DisplayWriteText(5, 5, 1, "Status:", ST77XX_WHITE);
 
+  //Wifi bar
+  DisplayWriteText(X + tft.width() / 2 + 20, 5, 1, "WiFi:", ST77XX_WHITE);
+
   //Input pressure
   boxIndex =0;
   DisplayWriteText(X, Y + 2, 1, "Pressure I/P", ST77XX_WHITE);
@@ -184,8 +189,14 @@ int getWidthFromMAcro()
 
 void DisplayStatus(char *power)
 {
-    tft.fillRect(48, 5, X + 58, 10, ST77XX_BLACK);
+    tft.fillRect(48, 5, X + 30, 10, ST77XX_BLACK);
     DisplayWriteText(48, 5, 1, power, ST77XX_WHITE);
+}
+
+void DisplayWifiStatus(char *power)
+{
+    tft.fillRect(X + tft.width() / 2 + 50, 5, X +tft.width() / 2+ 20, 10, ST77XX_BLACK);
+    DisplayWriteText(X + tft.width() / 2 + 50, 5, 1, power, ST77XX_WHITE);
 }
 
 void DisplayCalibrationMsg() {

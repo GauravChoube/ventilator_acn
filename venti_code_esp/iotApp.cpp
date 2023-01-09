@@ -48,7 +48,8 @@ void setup_wifi() {
 }
 
 int isConnectedToWifi() {
-  return WiFi.status() == WL_CONNECTED;
+  
+  return (WiFi.status() == WL_CONNECTED);
 }
 
 
