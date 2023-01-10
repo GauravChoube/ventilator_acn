@@ -98,8 +98,8 @@ int DisplayWriteValue(unsigned char x, unsigned char y, int width, float value, 
 
 void DisplayWelcomMsg() {
   DisplayClear();
-  DisplayWriteText(20, 45, 3, "Welcome", ST77XX_WHITE);
-  DisplayWriteText(40, 75, 1, "Powered by Accenture", ST77XX_GREEN);
+  DisplayWriteText(20, 45, 3, (char *)"Welcome", ST77XX_WHITE);
+  DisplayWriteText(40, 75, 1, (char *)"Powered by Accenture", ST77XX_GREEN);
 }
 
 void DisplayDummyUpdate() {
@@ -141,35 +141,35 @@ void DisplayMainScreen() {
   tft.drawLine(tft.width() / 2, 20, tft.width() / 2, tft.height(), colour);
 
   //status bar
-  DisplayWriteText(5, 5, 1, "Status:", ST77XX_WHITE);
+  DisplayWriteText(5, 5, 1,(char *) "Status:", ST77XX_WHITE);
 
   //Wifi bar
-  DisplayWriteText(X + tft.width() / 2 + 20, 5, 1, "WiFi:", ST77XX_WHITE);
+  DisplayWriteText(X + tft.width() / 2 + 20, 5, 1, (char *)"WiFi:", ST77XX_WHITE);
 
   //Input pressure
   boxIndex =0;
-  DisplayWriteText(X, Y + 2, 1, "Pressure I/P", ST77XX_WHITE);
+  DisplayWriteText(X, Y + 2, 1, (char *)"Pressure I/P", ST77XX_WHITE);
   tft.drawRect(X, Y + 15, X + 60, 20, colour);
-  DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"0.0", BOXES[boxIndex].txtColour);
+  DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,(char *)"0.0", BOXES[boxIndex].txtColour);
 
 
   //output pressure
   boxIndex =2;
-  DisplayWriteText(X, Y + 45, 1, "Pressure O/P", ST77XX_WHITE);
+  DisplayWriteText(X, Y + 45, 1,(char *) "Pressure O/P", ST77XX_WHITE);
   tft.drawRect(X, Y + 60, X + 60, 20, colour);
-  DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"0.0", BOXES[boxIndex].txtColour);
+  DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,(char *)"0.0", BOXES[boxIndex].txtColour);
 
   //input BPM
   boxIndex =1;
-  DisplayWriteText(X + tft.width() / 2 + 15, Y + 2, 1, "BPM", ST77XX_WHITE);
+  DisplayWriteText(X + tft.width() / 2 + 15, Y + 2, 1,(char *) "BPM", ST77XX_WHITE);
   tft.drawRect(X + tft.width() / 2, Y + 15, X + 60, 20, colour);
-   DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"0.0", BOXES[boxIndex].txtColour);
+   DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,(char *)"0.0", BOXES[boxIndex].txtColour);
 
   //input Tidal volume
   boxIndex =3;
-  DisplayWriteText(X + tft.width() / 2 + 5, Y + 45, 1, "Tidal I/P", ST77XX_WHITE);
+  DisplayWriteText(X + tft.width() / 2 + 5, Y + 45, 1, (char *)"Tidal I/P", ST77XX_WHITE);
   tft.drawRect(X + tft.width() / 2, Y + 60, X + 60, 20, colour);
-   DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,"0.0", BOXES[boxIndex].txtColour);
+   DisplayWriteText(BOXES[boxIndex].txtX, BOXES[boxIndex].txtY, BOXES[boxIndex].txtWidth,(char *)"0.0", BOXES[boxIndex].txtColour);
 }
 
 int getWidthDisplay()
@@ -206,7 +206,7 @@ void DisplayCalibrationMsg() {
   // tft.drawRect(X+tft.width()/4+2.5,Y+35, 37, 40, colour);
   tft.drawRect(X + tft.width() / 4 - 20, Y + 15, tft.width() / 2 + 20, 45, colour);
   //  tft.fillRect(X+tft.width()/4-5,Y+35, tft.width()/2, 40, ST77XX_WHITE);
-  DisplayWriteText(X + tft.width() / 4 - 10, Y + 33.5, 1.5, "Calibrating...", ST77XX_MAGENTA);
+  DisplayWriteText(X + tft.width() / 4 - 10, Y + 33.5, 1.5, (char *)"Calibrating...", ST77XX_MAGENTA);
   //  tft.reset();
 }
 
@@ -214,7 +214,7 @@ void DisplayErrorMsg(char* error_msg) {
   DisplayClear();
   int colour = ST77XX_GREEN;
   tft.drawRect(0, Y + 15, tft.width(), 45, colour);
-  DisplayWriteText(X + tft.width() / 4 - 5, Y + 30, 1.2, "SYSTEM ERROR", ST77XX_MAGENTA);
+  DisplayWriteText(X + tft.width() / 4 - 5, Y + 30, 1.2, (char *)"SYSTEM ERROR", ST77XX_MAGENTA);
   DisplayWriteText(X + tft.width() / 4 - 40, Y + 40, 0.1, error_msg, ST77XX_MAGENTA);
 }
 

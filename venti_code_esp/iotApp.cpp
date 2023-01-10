@@ -5,7 +5,7 @@
 #include "iotApp.hpp"
 
 
-#define SSID "My Router"
+#define SSID "My Honey"
 #define PASSWORD "gc@12345"
 
 #define MQTT_CLIENT_ID "venti_Device"
@@ -26,6 +26,7 @@ long now = millis();
 long lastMeasure = 0;
 
 
+
 void setup_wifi() {
 
   // We start by connecting to a WiFi network
@@ -33,6 +34,7 @@ void setup_wifi() {
   Serial.print("Connecting to ");
   Serial.println(SSID);
 
+  WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -40,38 +42,59 @@ void setup_wifi() {
     Serial.print(".");
   }
 
+  randomSeed(micros());
+
   Serial.println("");
-  Serial.print("WiFi connected - ESP IP address: ");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
   client.setServer(MQTT_SERVER, MQTT_PORT);
+  client.setCallback(callback);
 }
 
-int isConnectedToWifi() {
-  
+unsigned int isConnectedToWifi() {
+
+  // there is problem with below wifi status function, we are going with iot connection
   return (WiFi.status() == WL_CONNECTED);
+  // return (client.connected());
 }
 
 
 int mqttConnect() {
-  if (!client.connected()) {
 
-    Serial.print("Attempting MQTT connection...");
+  //if (isConnectedToWifi() == 1) 
+  {
+    if (!client.connected()) 
+    {
+
+      Serial.print("Attempting MQTT connection...");
 
 
-    // Attempt to connect (clientId, username, password)
-    if (client.connect(MQTT_CLIENT_ID, MQTT_USERNAME, NULL)) {
+      // Attempt to connect (clientId, username, password)
+      if (client.connect(MQTT_CLIENT_ID, MQTT_USERNAME, NULL)) 
+      {
 
-      Serial.println("connected");
+        Serial.println("connected");
+        return MQTT_CONNECTED;
+      } 
+      else 
+      {
+        Serial.print("failed, rc=");
+        Serial.println(client.state());
+        return MQTT_DISCONNECTED;
+      }
+    } 
+    else 
+    {
+      client.loop();
       return MQTT_CONNECTED;
-    } else {
-      Serial.print("failed, rc=");
-      Serial.println(client.state());
-      return MQTT_DISCONNECTED;
     }
-  } else {
-    return MQTT_CONNECTED;
-  }
+  } 
+  // else
+  // {
+  //   return MQTT_DISCONNECTED;
+  // }
 }
 
 void callback(String topic, byte* message, unsigned int length) {
@@ -99,10 +122,14 @@ int sendIOTParameter(char* buffer) {
   } else {
     return MQTT_DISCONNECTED;
   }
+
+return 0;  
 }
 
 int keepAlive() {
+  if (client.connected()) {
   client.loop();
+  }
   return 0;
 }
 

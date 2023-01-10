@@ -99,6 +99,8 @@ int fetchInput() {
       Serial.println(currentBOXcounter);
     }
   }
+  //after adding fetch input function wifi disconnecting,to avoid tryingh below one
+  keepAlive();
 
   buttonValue = getRightButtonValue();
   // Serial.println("reading rightButtonValue:");
@@ -125,6 +127,10 @@ int fetchInput() {
   }
   // Serial.println("reading stopstartButtonValue:");
 
+   //after adding fetch input function wifi disconnecting,to avoid tryingh below one
+  keepAlive();
+
+
   int buttonVal = getStartStopButtonValue();
   if (buttonVal != powerSwitchValue) {
     powerSwitchValue = buttonVal;
@@ -140,8 +146,14 @@ int fetchInput() {
     }
   }
 
+   //after adding fetch input function wifi disconnecting,to avoid tryingh below one
+  keepAlive();
+
+if(blinkStatus == 1)
+{
   // Serial.println("reading pot Value:");
   currentPotValue = getPotValue();
+}
 
   // Serial.print(("LeftButtonValue:"));
   // Serial.println(curentLeftButtonValue);
@@ -157,6 +169,10 @@ int fetchInput() {
 
   // Serial.print(("currentBOXcounter:"));
   // Serial.println(currentBOXcounter);
+
+   //after adding fetch input function wifi disconnecting,to avoid tryingh below one
+  keepAlive();
+
 
   return 0;
 }
@@ -238,7 +254,7 @@ int updateDisplay() {
     if (boxCursorMove == 1 && currentPowerSwitchValue == HIGH) {
       // Serial.println("checkpoint 3");
       Serial.print(F("INput cannot set when Ventilator is ON"));
-      DisplayErrorMsg("Input can't set if Device is ON");
+      DisplayErrorMsg((char *)"Input can't set if Device is ON");
       delay(1000);
       boxCursorMove = 0;
     } else {
@@ -252,7 +268,7 @@ int updateDisplay() {
   if (currentPowerSwitchValue == HIGH) {
     if (displayStatusDone == 0) {
 
-      DisplayStatus("ON");
+      DisplayStatus((char *)"ON");
       displayStatusDone = 1;
       Serial.println("Ventilator Start\n====================\n");
     }
@@ -260,7 +276,7 @@ int updateDisplay() {
 
     if (displayStatusDone == 0) {
 
-      DisplayStatus("OFF");
+      DisplayStatus((char *)"OFF");
       displayStatusDone = 1;
       Serial.println("====================\nVentilator Stop\n");
     }
@@ -272,6 +288,31 @@ int updateDisplay() {
   }
 
   // Update IOT status
+  if (isConnectedToWifi() != 1)
+  {
+     //Serial.println("0");
+    state=0;
+    if(state!=currentState)
+    {
+      Serial.println("Wifi disconnected");
+       DisplayWifiStatus((char *)"OFF");
+      currentState=state;
+    }
+
+  }
+  else
+  {
+    // Serial.println("1");
+    state=1;
+    if(state!=currentState)
+    {
+      Serial.println("Wifi connected");
+       DisplayWifiStatus((char *)"ON");
+      currentState=state;
+    }
+   
+
+  }
 
   return 0;
 }
@@ -400,7 +441,7 @@ void softsendtoarduino(int msgType,int state,int inhaleTime,int exhaleTime ,int 
   char softBuff[100];
   //*msgtype;state;step;inhaletime;exhaletime#
   char *format = "*%d;%d;%d;%d;%d#";
-   sprintf(softBuff, format, msgType, state, step,inhaleTime, exhaleTime);
+   sprintf(softBuff, (char *)format, msgType, state, step,inhaleTime, exhaleTime);
   Serial.print("Soft send cmd: ");
   Serial.println(softBuff);
   mySerial.print(softBuff);
@@ -611,6 +652,7 @@ void loop() {
   // DisplayDummyUpdate();
   // delay(1000);
 
+  
   /****************************
    *   Get sync the all data
    *****************************/
@@ -618,7 +660,7 @@ void loop() {
   rval = fetchInput();
   if (rval != 0) {
     Serial.println("Failed sync input switch value.Existing");
-    DisplayErrorMsg("Input Sync Failed");
+    DisplayErrorMsg((char *)"Input Sync Failed");
     exit(0);
   }
 
@@ -656,12 +698,12 @@ void loop() {
       rval = doCallibration();
       if (rval != 0) {
         Serial.println("Callibration Failed.Existing");
-        DisplayErrorMsg("Callibration Failure");
+        DisplayErrorMsg((char *)"Callibration Failure");
         exit(0);
       } else {
         // need chnage this logic if calibration logic added. As right now there is no callibration
         softsendtoarduino(1, 1,inHaleTime,exHaleTime,motorStep);        
-        delay(2000);
+       delay(2000);
         callibration = true;
       }
       callibrationDone = false;
@@ -686,13 +728,14 @@ void loop() {
         Serial.println(exHaleTime);
 
         ambuCompression = tidalVolumeInput * 0.060607;
-
+        currentState^=0x01;
         displayStatusDone = 0;
         DisplayMainScreen();
         updateBoxValue(0, pressureInputValue);
         updateBoxValue(1, bmpInputValue);
         updateBoxValue(3, tidalVolumeInput);
         startVentilator();
+
 
 
         Serial.println(("Starting The Ventilator"));
@@ -706,7 +749,7 @@ void loop() {
     rval = runVentilator();
     if (rval != 0) {
       Serial.println("Hardware Drive Failed.Existing");
-      DisplayErrorMsg("Hardware Drive Failure");
+      DisplayErrorMsg((char *)"Hardware Drive Failure");
       exit(0);
     }
   #endif
@@ -723,24 +766,27 @@ void loop() {
     formIOTPayload();
   }
 
-
-  // motor current and voltage
-
-  // iot packet
+   // iot packet
   if (isConnectedToWifi() == 1) 
   {
     if ((millis() - iotTime) > 5000) {
       iotconnectionDisconnected = false;
     }
 
-    if ((iotconnectionDisconnected == false) && (mqttConnect() == MQTT_CONNECTED)) {
+    if ((iotconnectionDisconnected == false) && (mqttConnect() == MQTT_CONNECTED)) 
+    {
       iotconnectionDisconnected = false;
-      if (iotPayloadRedy == true) {
-        sendIOTParameter(payload);
-        Serial.println("Iot Payload Send Successfully");
+      if (iotPayloadRedy == true) 
+      {
+        rval=sendIOTParameter(payload);
+        if(rval==0)
+            Serial.println("Iot Payload Send Successfully");
+        else
+            Serial.println("Iot Payload Send Failed.Connection issue");
+        
         iotPayloadRedy = false;
       }
-      keepAlive();
+      //keepAlive();
     } 
     else 
     {
@@ -751,31 +797,10 @@ void loop() {
     }
   }
 
-  
 
-  if (isConnectedToWifi() == 1) 
-  {
-   // Serial.println("1");
-    state=1;
-    if(state!=currentState)
-    {
-       DisplayWifiStatus("ON");
-      currentState=state;
-    }
 
-  }
-  else
-  {
-    //Serial.println("0");
-    state=0;
-    if(state!=currentState)
-    {
-       DisplayWifiStatus("OFF");
-      currentState=state;
-    }
 
-  }
-
+  // motor current and voltage
 
   /****************************
    *   process synced data
@@ -783,7 +808,7 @@ void loop() {
   rval = updateDisplay();
   if (rval != 0) {
     Serial.println("Failed Update display with latest value.Existing");
-    DisplayErrorMsg("Updating Display Failed");
+    DisplayErrorMsg((char *)"Updating Display Failed");
     delay(1000);
     exit(0);
   }

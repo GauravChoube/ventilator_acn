@@ -11,7 +11,7 @@ void  setup_wifi();
 int   sendIOTParameter(char *buffer);
 int   mqttConnect();
 int   keepAlive();
-int isConnectedToWifi();
+unsigned int isConnectedToWifi();
 
 
 void  callback(String topic, byte* message, unsigned int length);

@@ -39,6 +39,7 @@ int stepperMotorInit()
   // stepper.setMaxSpeed(1020);
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
+  return 0;
 }
 
 int stepperMotorSetStep(int stepValue)
