@@ -1,5 +1,6 @@
 #include <SoftwareSerial.h>
 #include "stepperMotor.hpp"
+#include "irSensor.hpp"
 
 #define rxPin 2
 #define txPin 3
@@ -154,6 +155,9 @@ void setup() {
   // pinMode(dirPin, OUTPUT);
   stepperMotorInit();
 
+  
+  initIRsensor();
+
   // Set the baud rate for the SoftwareSerial object
   mySerial.begin(4800);
   Serial.begin(115200);
@@ -213,7 +217,17 @@ void loop() {
 
   if(motorResetRequested==1)
   {
-      // right the logic for ir sensor here
+     
+      // stepperMotorSetStep(-200);
+      // stepperMotorSetDelayForStep(3000);
+      // while(1)
+      // {
+      //   if(getIRSensorValue()==0)
+      //   {
+      //     break;
+      //   }
+      //   stepperMotorRun();
+      // }
       motorResetRequested=0;
   }
   else

@@ -1,0 +1,2 @@
+bool getIRSensorValue();
+int initIRsensor();
