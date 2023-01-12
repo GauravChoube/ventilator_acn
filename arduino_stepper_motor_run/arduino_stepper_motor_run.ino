@@ -68,6 +68,7 @@ int runVentilator() {
       Serial.println("Inhale Start\n==========\n");
 
       stepperMotorRun();
+      digitalWrite(txPin, HIGH);
 
     }
     else 
@@ -112,6 +113,7 @@ int runVentilator() {
       Serial.println("exhale Start\n==========\n");
 
       stepperMotorRun();
+      digitalWrite(txPin, LOW);
 
     } else 
     {
@@ -146,7 +148,6 @@ void setup() {
   // Define pin modes for TX and RX
   pinMode(rxPin, INPUT);
   pinMode(txPin, OUTPUT);
-
 
   // Sets the two pins as Outputs
   // pinMode(stepPin, OUTPUT);
@@ -260,5 +261,6 @@ void loop() {
     ventilation = 0;
     exhaleStart = false;
     inhaleStart = false;
+    digitalWrite(txPin, LOW);
   }
 }

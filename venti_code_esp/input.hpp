@@ -9,5 +9,6 @@ int getLeftButtonValue();
 int getRightButtonValue();
 int getPotValue();
 int getStartStopButtonValue();
+bool getInhaleValue();
 
 #endif 

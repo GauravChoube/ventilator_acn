@@ -35,6 +35,7 @@ int currentPressureOutputValue = 0;
 
 int bmpInputValue = 0;
 float flowRate = 0;
+float flowRateOutput=0;
 
 int tidalVolumeInput = 0;
 int tidalVolumeOutput = 0;
@@ -60,6 +61,8 @@ bool ventilatorIsRunning = false;
 bool iotPayloadRedy = false;
 bool iotconnectionDisconnected = false;
 int iotTime = 0;
+
+bool inHaleDone=false;
 
 unsigned char state=0;
 unsigned char currentState;
@@ -317,17 +320,17 @@ int updateDisplay() {
   return 0;
 }
 
-int getOuputPressure() {
+float getOuputPressure() {
 
   return 0;
 }
 
-int getOuputFlow() {
+float getOuputFlow() {
 
   return 0;
 }
 
-int getOuputVolume() {
+float getOuputVolume() {
 
   return 0;
 }
@@ -348,6 +351,7 @@ int formIOTPayload() {
 
   char tmp[100];
 
+  memset(payload,0x00,sizeof(payload));
   strcpy(payload, "{");
 
   //input pressure
@@ -380,11 +384,18 @@ int formIOTPayload() {
   strcat(payload, tmp);
   strcat(payload, ",");
 
-  //motor speed
-  memset(tmp, 0x00, 100);
-  sprintf(tmp, format, "motorSpeed", motorSpeed);
-  strcat(payload, tmp);
-  strcat(payload, ",");
+//   //motor inhale speed
+//   memset(tmp, 0x00, 100);
+//   sprintf(tmp, format, "motorinHaleSpeed", motorSpeed);
+//   strcat(payload, tmp);
+//   strcat(payload, ",");
+
+
+// //motor exhale speed
+//   memset(tmp, 0x00, 100);
+//   sprintf(tmp, format, "motorexHaleSpeed", motorSpeed);
+//   strcat(payload, tmp);
+//   strcat(payload, ",");
 
   //motor step
   memset(tmp, 0x00, 100);
@@ -632,10 +643,17 @@ void setup() {
   inputInit();
 
   // pressure sensor Initialised
+  pressureSensorInit();
 
   // flow sensor Initialised
 
   // current sensor Initialised
+  if(initPowerSensor()==1)
+  {
+      Serial.println("Power-sensor Initialised");    
+  }
+  else
+     Serial.println("Power-sensor Initialised Failed");
 
   // IOT application Initialised
   setup_wifi();
@@ -651,7 +669,7 @@ void loop() {
 
   // DisplayDummyUpdate();
   // delay(1000);
-
+  float sensorValue;
   
   /****************************
    *   Get sync the all data
@@ -681,13 +699,43 @@ void loop() {
 
   if (ventilatorIsRunning == 1) {
     // start reading pressure sensor
-    getOuputPressure();
+    if(getInhaleValue()==1)
+    {
+        sensorValue=getOuputPressure();
+        if(sensorValue>pressureOutputValue)
+              pressureOutputValue=sensorValue;              
 
-    // start reading flow sensor
-    getOuputFlow();
+        // start reading flow sensor
+        sensorValue=getOuputFlow();
+        if(sensorValue>flowRateOutput)
+              flowRateOutput=sensorValue;
 
-    // start reading the volume
-    getOuputVolume();
+        // start reading the volume
+        sensorValue=getOuputVolume();
+        if(sensorValue>tidalVolumeOutput)
+              tidalVolumeOutput=sensorValue;
+
+        sensorValue= getCurrent();
+        if(sensorValue>motorCurrent)
+              motorCurrent=sensorValue;
+
+        sensorValue= getVoltage();
+        if(sensorValue>motorVoltage)
+              motorVoltage=sensorValue;
+
+         inHaleDone=true;
+
+    }
+    else
+    {
+      if(inHaleDone==true)
+      {
+        formIOTPayload();
+        inHaleDone=false;
+                  
+      }
+
+    }
 
     // check the callibration
     if (callibration == false) {
@@ -797,6 +845,7 @@ void loop() {
     }
   }
 
+  keepAlive();
 
 
 

@@ -1,24 +1,36 @@
+#include "Client.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
 #include "tftDisplay.hpp"
 #include "iotApp.hpp"
 
+#define THINGSBOARD
 
 #define SSID "My Honey"
 #define PASSWORD "gc@12345"
 
 #define MQTT_CLIENT_ID "venti_Device"
-#define MQTT_PUBLISH_TOPIC "v1/devices/me/telemetry"  //"ventiParameter"
+
+#ifdef THINGSBOARD
+#define MQTT_PUBLISH_TOPIC  "v1/devices/me/telemetry" 
 #define MQTT_SERVER "demo.thingsboard.io"
-// demo.thingsboard.io
-#define MQTT_PORT 1883
 #define MQTT_USERNAME "venti"
 #define MQTT_PASSWORD ""
+#else
+#define MQTT_PUBLISH_TOPIC "ventiParameter"
+#define MQTT_SERVER "192.168.105.171"
+#define MQTT_USERNAME NULL
+#define MQTT_PASSWORD NULL
+#endif
+
+#define MQTT_PORT 1883
+
 
 
 // Initializes the espClient
 WiFiClient espClient;
+
 PubSubClient client(espClient);
 
 // Timers auxiliar variables
@@ -51,6 +63,8 @@ void setup_wifi() {
 
   client.setServer(MQTT_SERVER, MQTT_PORT);
   client.setCallback(callback);
+  client.setBufferSize(1024);
+  
 }
 
 unsigned int isConnectedToWifi() {
@@ -63,34 +77,37 @@ unsigned int isConnectedToWifi() {
 
 int mqttConnect() {
 
-  //if (isConnectedToWifi() == 1) 
+  //if (isConnectedToWifi() == 1)
   {
-    if (!client.connected()) 
-    {
-
-      Serial.print("Attempting MQTT connection...");
+    if (!client.connected()) {
 
 
-      // Attempt to connect (clientId, username, password)
-      if (client.connect(MQTT_CLIENT_ID, MQTT_USERNAME, NULL)) 
+
+
+// Attempt to connect (clientId, username, password)
+#ifdef THINGSBOARD
+      Serial.print("Attempting MQTT connection To Thingsboard...");
+      if (client.connect(MQTT_CLIENT_ID, MQTT_USERNAME, NULL))
+#else
+      Serial.print("Attempting MQTT connection To Raspberry-pi...");
+      if (client.connect(MQTT_CLIENT_ID))
+#endif
       {
 
         Serial.println("connected");
+        //  client.publish(MQTT_PUBLISH_TOPIC , "{\"mqtt\":\"1\"}");
+
         return MQTT_CONNECTED;
-      } 
-      else 
-      {
+      } else {
         Serial.print("failed, rc=");
         Serial.println(client.state());
         return MQTT_DISCONNECTED;
       }
-    } 
-    else 
-    {
+    } else {
       client.loop();
       return MQTT_CONNECTED;
     }
-  } 
+  }
   // else
   // {
   //   return MQTT_DISCONNECTED;
@@ -116,19 +133,35 @@ void callback(String topic, byte* message, unsigned int length) {
 int sendIOTParameter(char* buffer) {
   // check buffer is there
   //publish data
+  unsigned int rval=0;
 
   if (client.connected()) {
-    client.publish(MQTT_PUBLISH_TOPIC, buffer);
+    Serial.print("Publishing the payload:");
+    Serial.println(buffer);    
+    rval=client.publish(MQTT_PUBLISH_TOPIC, buffer);
+    // rval=client.publish(MQTT_PUBLISH_TOPIC , "{\"mqtt\":\"2\"}");
+    if(rval==0)
+       Serial.println("Failed to published");
+    else
+    {
+       Serial.print("Succesfully published byte:");
+       Serial.println(rval);
+    }
+      
+
+    
   } else {
     return MQTT_DISCONNECTED;
   }
 
-return 0;  
+  return rval;
 }
 
 int keepAlive() {
-  if (client.connected()) {
-  client.loop();
+  //if (client.connected()) 
+  {
+    //Serial.println("wifi client loop");
+    client.loop();
   }
   return 0;
 }
