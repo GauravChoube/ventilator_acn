@@ -168,6 +168,7 @@ void setup() {
 
 
 void loop() {
+  
   if (mySerial.available() > 0) {
     c = mySerial.read();
     //*msgtype;state;dir;step;delay#

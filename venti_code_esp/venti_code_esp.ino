@@ -320,10 +320,6 @@ int updateDisplay() {
   return 0;
 }
 
-float getOuputPressure() {
-
-  return 0;
-}
 
 float getOuputFlow() {
 
@@ -701,7 +697,8 @@ void loop() {
     // start reading pressure sensor
     if(getInhaleValue()==1)
     {
-        sensorValue=getOuputPressure();
+      Serial.println("Inhaling..");
+        sensorValue=getOutputPressureInPascal();
         if(sensorValue>pressureOutputValue)
               pressureOutputValue=sensorValue;              
 

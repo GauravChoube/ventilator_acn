@@ -13,12 +13,15 @@ int pressureSensorInit()
   //initiliased pressure sensor here. with library or direct code
   pinMode(HX_SCK_PIN, OUTPUT);
   pinMode(HX_OUT_PIN, INPUT);
+
+  digitalWrite(HX_OUT_PIN,LOW);
+Serial.begin(115200);
   return 0;
 }
 
 /// @brief 
 /// @return 
-unsigned long readHX() {
+long readHX() {
 
   // pulse clock line to start a reading
   for (char i = 0; i < HX_MODE; i++) {
@@ -26,14 +29,18 @@ unsigned long readHX() {
     digitalWrite(HX_SCK_PIN, LOW);
   }
 
+  Serial.println("cp1");
+
   // wait for the reading to finish
-  while (digitalRead(HX_OUT_PIN)) {}
+  while (digitalRead(HX_OUT_PIN));
 
   // read the 24-bit pressure as 3 bytes using SPI
   byte data[3];
-  for ( byte  j = 3; j--;) {
+  for ( byte  j = 3; j>0;j--) {
     data[j] = shiftIn(HX_OUT_PIN, HX_SCK_PIN, MSBFIRST);
   }
+  
+Serial.println("cp2");
 
   data[2] ^= 0x80;  // see note
 
@@ -42,7 +49,8 @@ unsigned long readHX() {
   result += (long)data[2] << 16;
   result += (long)data[1] << 8;
   result += (long)data[0];
-  
+
+    Serial.println("cp3");
  
   return result;
 }
@@ -61,8 +69,8 @@ float getOutputPressure()
         
         //1 cmh2o = 98.0665 pascal 
         //DO you calculation on calculated pascal.
-        pressureH2o=( 0.0000006071 * readHX()) + 5.1020;  // 200 * 0.00000029 * readHX() = 0.0000006071
-        //pressureH2o=readHX();
+        //pressureH2o=( 0.0000006071 * readHX()) + 5.1020;  // 200 * 0.00000029 * readHX() = 0.0000006071
+        pressureH2o=readHX();
 
 
   return pressureH2o;
